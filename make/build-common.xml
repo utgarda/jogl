@@ -333,22 +333,50 @@
     <!-- ================================================================== -->
     <!-- GlueGen and BuildStaticGLInfo creation, task setup and Java file generation -->
     <!--
-       - Build GlueGen
+       - Build GlueGen or fetch it from maven repo
       -->
-    <target name="common.gluegen.build" depends="common.init" unless="common.gluegen.build.done">
-        <property name="common.gluegen.build.done" value="true" />
+    <condition property="common.gluegen.dont.build">
+        <or>
+            <isset property="gluegen.maven.fetch"/>
+            <isset property="common.gluegen.build.done"/>
+        </or>
+    </condition>
+
+    <target name="common.gluegen.build" depends="common.init" unless="gluegen.maven.fetch">
+        <echo message="common.gluegen.build: gluegen.maven.fetch=${gluegen.maven.fetch}"/>
+        <property name="common.gluegen.build.done" value="true"/>
 
         <!-- Run the GlueGen build to ensure that the GlueGen ANT task
            - has been built. -->
         <!-- FIXME: remove passing down of antlr.jar when gluegen.properties is on all
              nightly build machines -->
         <ant antfile="${gluegen.build.xml}" dir="${gluegen.make}" target="all" inheritAll="false">
-          <propertyset>
-            <propertyref name="antlr.jar" />
-            <!--propertyref name="gluegen.nsig" /-->
-          </propertyset>
+            <propertyset>
+                <propertyref name="antlr.jar"/>
+                <!--propertyref name="gluegen.nsig" /-->
+            </propertyset>
         </ant>
     </target>
 
+    <target name="common.gluegen.maven.fetch" if="gluegen.maven.fetch">
+        <!--pom.xml currently says to use the latest snapshot version-->
+        <exec executable="mvn" dir="${make}">
+            <arg value="dependency:copy-dependencies"/>
+            <arg value="-DincludeArtifactIds=gluegen-rt"/>
+            <arg value="-Dmdep.stripVersion=true"/>
+            <arg value="-DoutputDirectory=${build.gluegen}"/>
+        </exec>
+        <exec executable="mvn" dir="${make}">
+            <arg value="dependency:copy-dependencies"/>
+            <arg value="-DincludeArtifactIds=gluegen-cpptasks"/>
+            <arg value="-Dmdep.stripVersion=true"/>
+            <arg value="-DoutputDirectory=${build.gluegen}/../make"/>
+        </exec>
+        <unzip src="${build.gluegen}/../make/gluegen-cpptasks.jar" dest="${build.gluegen}/../make"/>
+    </target>
+
+    <target name="common.gluegen" depends="common.gluegen.build, common.gluegen.maven.fetch">
+        <echo message="common.gluegen: gluegen.maven.fetch=${gluegen.maven.fetch}"/>
+    </target>
 
 </project>

@@ -674,7 +674,7 @@
        - from the C GL headers.  This involves setting the taskdef and creating
        - the classpath reference id then running the task on each header.
       -->
-    <target name="java.generate" depends="common.gluegen.build, java.generate.check" unless="java.generate.skip">
+    <target name="java.generate" depends="common.gluegen, java.generate.check" unless="java.generate.skip">
 
         <!-- Add the GlueGen and BuildStaticGLInfo tasks to ANT -->
         <taskdef name="gluegen" classname="com.sun.gluegen.ant.GlueGenTask"
@@ -991,7 +991,7 @@
                      includes="com/jogamp/opengl/util/glsl/fixedfunc/impl/FixedFuncImpl.java" />
         </copy>
     </target>          
-    <target name="java.generate.composable.pipeline.custom" depends="init, common.gluegen.build, java.generate.composable.pipeline.custom.glfixfunc">
+    <target name="java.generate.composable.pipeline.custom" depends="init, common.gluegen, java.generate.composable.pipeline.custom.glfixfunc">
     </target>
 
     <!-- ================================================================== -->
